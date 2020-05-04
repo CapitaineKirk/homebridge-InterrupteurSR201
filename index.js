@@ -226,9 +226,9 @@ InterrupteurSR201Accessory.prototype.getServices = function() {
   this.Service = new Service.Switch(this.name);
 
   this.informationService
-  .setCharacteristic(Characteristic.Manufacturer, 'Capitaine Kirk Factory')
-  .setCharacteristic(Characteristic.Model, 'Switch Command')
-  .setCharacteristic(Characteristic.SerialNumber, '1.0');
+  .setCharacteristic(Characteristic.Manufacturer, 'Fabrique du Capitaine Kirk')
+  .setCharacteristic(Characteristic.Model, 'Interrupteur SR-201')
+  .setCharacteristic(Characteristic.SerialNumber, '1.0.0');
 
   this.Service.getCharacteristic(Characteristic.On)
   .on('set', this.setOn.bind(this))
