@@ -18,8 +18,8 @@ Merci également à l'équipe homebrdige (https://homebridge.io).
 2. Installez ce plugin: `npm install -g homebridge-InterrupteurSR201`  
 3. Mettez à jour le fichier `config.json`  
 4. Configurez le module SR-201  
-4.1. Script perl (https://github.com/CapitaineKirk/homebridge-InterrupteurSR201/scripts/)  
-4.2. Script python (https://github.com/cryxli/sr201/scripts/python-config-script/) 
+4.1. Script perl (https://github.com/CapitaineKirk/homebridge-InterrupteurSR201/blob/master/scripts/ConfigSR-201.pl)  
+4.2. Script python (https://github.com/cryxli/sr201/blob/master/scripts/python-config-script/relay.py) 
 
 ## Configuration
 
