@@ -10,23 +10,23 @@ const TCP_TIMEOUT = 500;
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory('homebridge-InterrupteurCommande', 'InterrupteurCommande', InterrupteurCmdAccessory);
+  homebridge.registerAccessory('homebridge-InterrupteurSR201', 'InterrupteurSR201', InterrupteurSR201Accessory);
 };
 
-function InterrupteurCmdAccessory(log, config) {
+function InterrupteurSR201Accessory(log, config) {
   this.log = log;
   this.name = config.name;
   this.adresseIp = config.adresseIp;
   this.relais = config.relais;
-  this.debug = config.debug;
+  this.intervalLecture = config.intervalLecture || 1;
+  this.debug = config.debug || 0;
   this.etatInterrupteurMemorise = false; //Etat initial
   this.etatInterrupteurDemandee = false; //Etat initial
-  this.intervalLecture = config.intervalLecture;
 
-  this.log('Fin InterrupteurCmdAccessory');
+  this.log('Fin InterrupteurSR201Accessory');
 }
 
-InterrupteurCmdAccessory.prototype.setOn = function(estOn, callback, context) {
+InterrupteurSR201Accessory.prototype.setOn = function(estOn, callback, context) {
   if (context === 'pollState') {
     // The state has been updated by the pollState command - don't run the open/close command
     callback(null);
@@ -53,14 +53,14 @@ InterrupteurCmdAccessory.prototype.setOn = function(estOn, callback, context) {
   return true;
 };
 
-InterrupteurCmdAccessory.prototype.getOn = function(callback) {
+InterrupteurSR201Accessory.prototype.getOn = function(callback) {
   var accessory = this;
 
   accessory.log('Appel de getOn');
   callback(null, accessory.etatInterrupteurMemorise);
 }
 
-InterrupteurCmdAccessory.prototype.handleEventConnect = function() {
+InterrupteurSR201Accessory.prototype.handleEventConnect = function() {
   this.log('Evenement connexion');
   if (this.stateTimer) {
     clearTimeout(this.stateTimer);
@@ -69,23 +69,23 @@ InterrupteurCmdAccessory.prototype.handleEventConnect = function() {
   this.stateTimer = setImmediate(this.queryState.bind(this));
 }
 
-InterrupteurCmdAccessory.prototype.handleEventTimeout = function() {
+InterrupteurSR201Accessory.prototype.handleEventTimeout = function() {
   this.log('Evenement timeout');
   this.socket.connect(TCP_PORT, this.adresseIp);
 }
 
-InterrupteurCmdAccessory.prototype.handleEventError = function(error) {
+InterrupteurSR201Accessory.prototype.handleEventError = function(error) {
   this.log('Evenement error (' + error.code + ')');
 }
 
-InterrupteurCmdAccessory.prototype.handleEventClose = function() {
+InterrupteurSR201Accessory.prototype.handleEventClose = function() {
   this.log('Evenement close');
   this.socket.connect(TCP_PORT, this.adresseIp);
 }
 
-InterrupteurCmdAccessory.prototype.handleEventData = function(data) {
+InterrupteurSR201Accessory.prototype.handleEventData = function(data) {
   if(this.debug) {
-      this.log('Evenement data' + data);
+      this.log('Evenement data : ' + data);
     }
 
   try {
@@ -104,11 +104,11 @@ InterrupteurCmdAccessory.prototype.handleEventData = function(data) {
   this.stateTimer = setImmediate(this.monitorState.bind(this));
 }
 
-InterrupteurCmdAccessory.prototype.handleEventEnd = function() {
+InterrupteurSR201Accessory.prototype.handleEventEnd = function() {
   this.log('Evenement end');
 }
 
-InterrupteurCmdAccessory.prototype.queryState = function() {
+InterrupteurSR201Accessory.prototype.queryState = function() {
   if(this.debug) {
     this.log('Interrogation du capteur');
   }
@@ -129,10 +129,10 @@ InterrupteurCmdAccessory.prototype.queryState = function() {
   }
 }
 
-InterrupteurCmdAccessory.prototype.monitorState = function() {
+InterrupteurSR201Accessory.prototype.monitorState = function() {
   var accessory = this;
-  var etatInterrupteurEnDefaut = true;
   var InterrupteurChange = false;
+  var commande = '';
   
   if(accessory.debug) {
     if(accessory.etatInterrupteurMemorise) {
@@ -151,7 +151,7 @@ InterrupteurCmdAccessory.prototype.monitorState = function() {
       }
     break;
     case '0' :
-      accessory.relaisiActif = false;
+      accessory.relaisActif = false;
       accessory.relaisEnDefaut = false;
       if(accessory.debug) {
         accessory.log('Etat du relais de ' + accessory.name + ' est (OFF)');
@@ -165,7 +165,7 @@ InterrupteurCmdAccessory.prototype.monitorState = function() {
     break;
   }
 
-  if(etatInterrupteurEnDefaut) {
+  if(accessory.relaisEnDefaut) {
     accessory.log("Etat defaut de " + accessory.name);
     accessory.etatInterrupteurMemorise - false;
     accessory.Service.getCharacteristic(Characteristic.On).updateValue(false);
@@ -201,13 +201,17 @@ InterrupteurCmdAccessory.prototype.monitorState = function() {
     }
   }
   if(InterrupteurChange) {
-     try {
-       accessory.socket.write(commande);
-     } catch(exception) {
-       accessory.log("Erreur d\'exécution de la commande : " + exception.sdout);
-     }
-   }
+    accessory.log('Commande envoye : ' + commande);
+    try {
+      accessory.socket.write(commande);
+    } catch(exception) {
+      accessory.log("Erreur d\'exécution de la commande : " + exception.sdout);
+    }
+  }
 
+  if(accessory.debug) {
+    accessory.log('Relance de queryState dans ' + accessory.intervalLecture * 1000 + 'ms');
+  }
   // Clear any existing timer
   if (accessory.stateTimer) {
     clearTimeout(accessory.stateTimer)
@@ -216,7 +220,7 @@ InterrupteurCmdAccessory.prototype.monitorState = function() {
   accessory.stateTimer = setTimeout(this.queryState.bind(this),(accessory.intervalLecture) * 1000);
 };
 
-InterrupteurCmdAccessory.prototype.getServices = function() {
+InterrupteurSR201Accessory.prototype.getServices = function() {
   this.log('Debut Getservices');
   this.informationService = new Service.AccessoryInformation();
   this.Service = new Service.Switch(this.name);
