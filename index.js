@@ -167,7 +167,7 @@ InterrupteurSR201Accessory.prototype.monitorState = function() {
 
   if(accessory.relaisEnDefaut) {
     accessory.log("Etat defaut de " + accessory.name);
-    accessory.etatInterrupteurMemorise - false;
+    accessory.etatInterrupteurMemorise = false;
     accessory.Service.getCharacteristic(Characteristic.On).updateValue(false);
   } else {
     if(accessory.relaisActif) {
