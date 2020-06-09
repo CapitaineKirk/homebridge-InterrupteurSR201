@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-Interrupteur-SR-201",
+  "name": "homebridge-interrupteursr201",
   "version": "1.0.0",
   "description": "Homebridge plugin gérant un interrupteur avec le module SR-201",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CapitaineKirk/homebridge-Interrupteur-SR201"
+    "url": "git+https://github.com/CapitaineKirk/homebridge-InterrupteurSR201"
   },
   "keywords": [
     "homebridge-plugin",
@@ -21,7 +21,7 @@
   "author": "Capitaine Kirk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/CapitaineKirk/homebridge-Interrupteur-SR201/issues"
+    "url": "https://github.com/CapitaineKirk/homebridge-InterrupteurSR201/issues"
   },
-  "homepage": "https://github.com/CapitaineKirk/homebridge-Interrupteur-SR201#readme"
+  "homepage": "https://github.com/CapitaineKirk/homebridge-InterrupteurSR201#readme"
 }
