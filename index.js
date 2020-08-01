@@ -5,7 +5,7 @@ var net = require('net');
 const date = require('date-and-time');
 const TCP_PORT = 6722;
 const TCP_CMD_STATUS ="00";
-const TCP_TIMEOUT = 500;
+const TCP_TIMEOUT = 1500;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -90,6 +90,17 @@ InterrupteurSR201Accessory.prototype.handleEventData = function(data) {
 
   try {
       this.lectureCapteur = data.toString('utf-8').substring(this.relais-1,this.relais);
+      // le fonctionnement des relais supplémentaires est inverse (0 = Actif, 1 =Inactif)
+      if(this.relais > 2) {
+        switch(this.lectureCapteur) {
+         case '1' :
+           this.lectureCapteur = 0;
+         break;
+         case '0' :
+           this.lectureCapteur = 1;
+         break;
+         }
+      }
   } catch(exception) {
       this.log("Erreur lecture de l'etat :" + exception.sdout);
       this.lectureCapteur = '';
@@ -173,7 +184,12 @@ InterrupteurSR201Accessory.prototype.monitorState = function() {
     if(accessory.relaisActif) {
       if(!accessory.etatInterrupteurDemande) {
         accessory.log("Etat demande de " + accessory.name + " est : (OFF)");
-        commande = '2' + this.relais;
+        // le fonctionnement des relais supplémentaires est inverse (0 = Actif, 1 =Inactif)
+        if(this.relais > 2) {
+          commande = '1' + this.relais;
+        } else {
+          commande = '2' + this.relais;
+        }
         InterrupteurChange = true;
       } else {
         if(!accessory.etatInterrupteurMemorise) {
@@ -187,7 +203,12 @@ InterrupteurSR201Accessory.prototype.monitorState = function() {
     } else {
       if(accessory.etatInterrupteurDemande) {
         accessory.log("Etat demande de " + accessory.name + " est : (ON)");
-        commande = '1' + this.relais;
+        // le fonctionnement des relais supplémentaires est inverse (0 = Actif, 1 =Inactif)
+        if(this.relais > 2) {
+          commande = '2' + this.relais;
+        } else {
+          commande = '1' + this.relais;
+        }
         InterrupteurChange = true;
       } else {
         if(accessory.etatInterrupteurMemorise) {
